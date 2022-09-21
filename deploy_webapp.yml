@@ -1,0 +1,5 @@
+---
+- name: "installation de docker"
+  import_playbook: docker.yml
+- name: " déploiement de web app"
+  import_playbook: webapp.yml

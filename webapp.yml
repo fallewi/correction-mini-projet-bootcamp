@@ -1,0 +1,37 @@
+---
+- name: deploiement de webapp
+  hosts: prod
+  become: yes
+  tags: webappp
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    - name: "supprimer le repertoire de webapp"
+      file:
+        path: "/home/{{ ansible_user }}/webapp"
+        state: absent
+    - name: creation du repertoire webapp
+      file:
+        path: "/home/{{ ansible_user }}/webapp"
+        state: directory
+
+    - name: "installation de git"
+      yum:
+        name: git
+        state: present
+
+    - name: "clone du repertoire webapp"
+      git:
+        repo: https://github.com/diranetafen/webapp.git
+        dest: /home/{{ ansible_user }}/webapp
+
+    - name: "deploiement du conteneur pour webapp"
+      docker_container:
+        name: nginx
+        image: nginx
+        state: started
+        recreate: yes
+        ports:
+          - 8090:80
+        volumes:
+          - /home/{{ ansible_user }}/webapp:/usr/share/nginx/html/

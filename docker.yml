@@ -1,0 +1,58 @@
+---
+- name: Installation de docker
+  hosts: prod
+  become: yes
+  tags: docker
+  vars_files:
+    - files/secret/credentials.yml
+  pre_tasks:
+
+    - name: Installation des prerequis
+      yum:
+        name: "{{ item }}"
+        state: latest
+      loop:
+        - yum-utils
+        - python3
+        - epel-release
+        - device-mapper-persistent-data
+        - lvm2
+
+    - name: telechargement de pip
+      get_url:
+        url: https://bootstrap.pypa.io/get-pip.py
+        dest: /tmp/get-pip.py
+
+    - name: "installation de python-pip"
+      command: python3 /tmp/get-pip.py
+
+    - name: "installation de docker-python"
+      pip:
+        name: docker-py
+        executable: /usr/local/bin/pip3
+
+    - name: "rajout des depôts de DOCKER-CE"
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+       
+    - name: Installation de docker
+      yum:
+        name: docker
+        state: latest
+
+    - name: Demarrage du demon docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: ajout du user dans le groupe docker
+      user:
+        name: "{{ ansible_user }}"
+        group: dockerroot
+        append: yes
+      
+
+
+
